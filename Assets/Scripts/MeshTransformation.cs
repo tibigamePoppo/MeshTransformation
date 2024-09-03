@@ -1,54 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
 public class MeshTransformation : MonoBehaviour
 {
-    MeshFilter _meshFilter;
-    MeshCollider _meshCollider;
-    Vector3[] vertices;
-    private List<GameObject> _markerList = new List<GameObject>();
-    private Vector3 targetVertice;
+    private MeshFilter _meshFilter;
+    private MeshCollider _meshCollider;
+    private Vector3[] _vertices;
+    private Vector3 _targetVertice;
+
     void Awake()
     {
         _meshFilter = GetComponent<MeshFilter>();
         _meshCollider = GetComponent<MeshCollider>();
 
-        vertices = _meshFilter.mesh.vertices;
-        for (int i = 0; i < vertices.Length; i++)
+        _vertices = _meshFilter.mesh.vertices;
+        for (int i = 0; i < _vertices.Length; i++)
         {
-            Debug.Log($"psition {i} = {vertices[i]}");
-            if (vertices[i].y > 0)
+            if (_vertices[i].y > 0)
             {
-                vertices[i] += new Vector3(0.3f, 0.3f, 0);
+                _vertices[i] += new Vector3(0.3f, 0.3f, 0);
             }
         }
-        _meshFilter.mesh.vertices = vertices;
+        _meshFilter.mesh.vertices = _vertices;
         _meshCollider.sharedMesh = _meshFilter.mesh;
     }
 
-    public void SetMarkerList(List<GameObject> markerList)
-    {
-        _markerList = markerList;
-    }
+    // 選択している頂点を決定
     public void SelectVertice(Vector3 position)
     {
-        vertices = _meshFilter.mesh.vertices;
+        _vertices = _meshFilter.mesh.vertices;
 
-        targetVertice = vertices
+        _targetVertice = _vertices
             .OrderBy(p => Vector3.Distance(p, position))
             .FirstOrDefault();
     }
+
+    // メッシュを更新
     public void UpdateMesh(Vector3 position)
     {
-        if (vertices == null || targetVertice == default(Vector3))
+        if (_vertices == null || _targetVertice == default(Vector3))
         {
-            Debug.LogWarning("Vertices or target vertex not set.");
+            Debug.LogWarning("_vertices or target vertex not set.");
             return;
         }
-        var newVertices = vertices.Select(p => p == targetVertice ? position : p).ToArray();
-        _meshFilter.mesh.vertices = newVertices;
+
+        var new_vertices = _vertices.Select(p => p == _targetVertice ? position : p).ToArray();
+
+        _meshFilter.mesh.vertices = new_vertices;
         _meshFilter.mesh.RecalculateBounds();
         _meshFilter.mesh.RecalculateNormals();
         _meshCollider.sharedMesh = _meshFilter.mesh;
